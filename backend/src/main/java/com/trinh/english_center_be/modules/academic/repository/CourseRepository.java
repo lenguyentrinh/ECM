@@ -1,0 +1,17 @@
+package com.trinh.english_center_be.modules.academic.repository;
+
+import com.trinh.english_center_be.modules.academic.entity.Course;
+import com.trinh.english_center_be.modules.teacher.entity.Teacher;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CourseRepository extends JpaRepository<Course, String> {
+
+    List<Course> findByTeacher(Teacher teacher);
+
+    boolean existsByCode(String code);
+
+    /** Live = active is not explicitly false (legacy rows carry no flag). */
+    boolean existsByCategoryIdAndActiveNot(String categoryId, Boolean active);
+
+}
