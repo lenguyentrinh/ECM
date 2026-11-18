@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    "Nunito Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-serif: "Merriweather", Georgia, "Times New Roman", serif;
+}
+
+:root {
+  --toastify-font-family: var(--font-sans);
+}
+
+/* Optional global baseline */
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  @apply bg-[#f3f6fb] font-sans text-slate-800 antialiased;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+}
+
+/* Thin scrollbars that only show on hover (design v5). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Every button: pressed feedback + smooth hover. */
+button:not(:disabled) {
+  transition:
+    background-color 0.15s,
+    filter 0.15s,
+    transform 0.1s,
+    opacity 0.15s;
+}
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
