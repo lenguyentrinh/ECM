@@ -8,6 +8,7 @@ import com.trinh.english_center_be.shared.util.MessageConstant;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +33,11 @@ public class CategoryController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAll() {
-        return ResponseEntity.ok(new ApiResponse<>(200, String.format(MessageConstant.LIST_SUCCESSFULLY, CATEGORY), categoryService.findAll()));
+        // no-cache = the browser may keep a copy but must ask the server first (ETag, see HttpCacheConfig): 304 if
+        // unchanged, fresh data right after a create/update/delete. private = login required, so no shared proxy/CDN cache.
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noCache().cachePrivate())
+                .body(new ApiResponse<>(200, String.format(MessageConstant.LIST_SUCCESSFULLY, CATEGORY), categoryService.findAll()));
     }
 
     @PostMapping

@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -38,7 +39,10 @@ public class CourseController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CourseResponse>>> getAll() {
-        return ResponseEntity.ok(new ApiResponse<>(200, MessageConstant.LIST_SUCCESSFULLY, courseService.findAll()));
+        // Public catalogue (same body for everyone), but enrolledCount changes on every enrollment: always revalidate.
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noCache())
+                .body(new ApiResponse<>(200, MessageConstant.LIST_SUCCESSFULLY, courseService.findAll()));
     }
 
     @GetMapping("/{id}")

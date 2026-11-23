@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -45,7 +46,10 @@ public class TeacherController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<TeacherResponse>>> getAll(Authentication auth) {
         List<TeacherResponse> teachers = teacherService.findTeachers().stream().map(t -> view(t, auth)).toList();
-        return ResponseEntity.ok(new ApiResponse<>(200, String.format(MessageConstant.LIST_SUCCESSFULLY, Constant.TEACHER), teachers));
+        // private: the body depends on the caller (salary is hidden for non-admins), so no shared cache may store it.
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noCache().cachePrivate())
+                .body(new ApiResponse<>(200, String.format(MessageConstant.LIST_SUCCESSFULLY, Constant.TEACHER), teachers));
     }
 
     @GetMapping("/{id}")

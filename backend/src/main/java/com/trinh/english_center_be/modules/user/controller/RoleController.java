@@ -7,6 +7,7 @@ import com.trinh.english_center_be.shared.util.Constant;
 import com.trinh.english_center_be.shared.util.MessageConstant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,9 @@ public class RoleController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAll() {
-        return ResponseEntity.ok(new ApiResponse<>(200,
-                String.format(MessageConstant.LIST_SUCCESSFULLY, Constant.ROLE), roleService.findAll()));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noCache().cachePrivate())
+                .body(new ApiResponse<>(200,
+                        String.format(MessageConstant.LIST_SUCCESSFULLY, Constant.ROLE), roleService.findAll()));
     }
 }
