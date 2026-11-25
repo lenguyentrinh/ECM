@@ -30,6 +30,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,11 +67,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional
     public CourseStudentResponse enroll(String courseId, String userId) {
         return enroll(courseId, userId, false);
     }
 
     @Override
+    @Transactional
     public CourseStudentResponse enrollSelf(String courseId, String userId) {
         Course course = requireLive(courseId);
         if (course.getStatus() != CourseStatus.OPEN) {
@@ -80,8 +83,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional
     public CourseStudentResponse enroll(String courseId, String userId, boolean force) {
-        Course course = requireLive(courseId);
+        // Khóa dòng course: 2 request enroll cùng khóa học chạy lần lượt, nên bước "đã ghi danh chưa / lớp đầy chưa" không bị race.
+        Course course = courseRepository.findByIdForUpdate(courseId)
+                .filter(c -> !Boolean.FALSE.equals(c.getActive()))
+                .orElseThrow(() -> new ResourceNotFoundException(String.format(MessageConstant.NOT_FOUND_BY_ID, Constant.COURSE, courseId)));
         if (course.getStatus() == CourseStatus.CLOSE) {
             throw new BusinessException("Course is closed for enrollment", HttpStatus.CONFLICT);
         }
