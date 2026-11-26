@@ -5,13 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.trinh.english_center_be.modules.auth.entity.EmailVerificationOtp;
 import com.trinh.english_center_be.modules.auth.repository.EmailVerificationOtpRepository;
-import com.trinh.english_center_be.modules.auth.service.MailService;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpChannel;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpPurpose;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpSender;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpSenderFactory;
 import com.trinh.english_center_be.modules.user.entity.User;
 import com.trinh.english_center_be.modules.user.service.UserService;
 import com.trinh.english_center_be.shared.enums.UserStatus;
@@ -30,7 +34,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 class EmailVerificationServiceImplTest {
 
     @Mock UserService userService;
-    @Mock MailService mailService;
+    @Mock OtpSenderFactory otpSenders;
+    @Mock OtpSender otpSender;
     @Mock EmailVerificationOtpRepository repository;
 
     EmailVerificationServiceImpl service;
@@ -39,7 +44,8 @@ class EmailVerificationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new EmailVerificationServiceImpl(userService, mailService, repository);
+        lenient().when(otpSenders.create(OtpChannel.EMAIL)).thenReturn(otpSender);
+        service = new EmailVerificationServiceImpl(userService, otpSenders, repository);
         ReflectionTestUtils.setField(service, "ttlMinutes", 5L);
         ReflectionTestUtils.setField(service, "otpSecret", "unit-test-secret-unit-test-secret!!");
         user = User.builder().id("u1").email("a@b.com").fullName("A B").status(UserStatus.ACTIVE)
@@ -50,7 +56,7 @@ class EmailVerificationServiceImplTest {
         when(userService.findByEmail("a@b.com")).thenReturn(Optional.of(user));
         service.sendCode("a@b.com");
         ArgumentCaptor<String> otp = ArgumentCaptor.forClass(String.class);
-        verify(mailService).sendEmailVerificationOtp(eq("a@b.com"), eq("A B"), otp.capture());
+        verify(otpSender).send(eq(OtpPurpose.VERIFY_EMAIL), eq(user), otp.capture());
         ArgumentCaptor<EmailVerificationOtp> saved = ArgumentCaptor.forClass(EmailVerificationOtp.class);
         verify(repository).save(saved.capture());
         lastHash = saved.getValue().getOtpHash();
@@ -74,7 +80,7 @@ class EmailVerificationServiceImplTest {
 
         service.sendCode("a@b.com");
 
-        verify(mailService, never()).sendEmailVerificationOtp(anyString(), anyString(), anyString());
+        verify(otpSender, never()).send(any(), any(), anyString());
     }
 
     @Test
@@ -83,7 +89,7 @@ class EmailVerificationServiceImplTest {
 
         service.sendCode("x@y.com");
 
-        verify(mailService, never()).sendEmailVerificationOtp(anyString(), anyString(), anyString());
+        verify(otpSender, never()).send(any(), any(), anyString());
     }
 
     @Test

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,8 +13,11 @@ import static org.mockito.Mockito.when;
 import com.trinh.english_center_be.modules.auth.dto.ResetPasswordRequest;
 import com.trinh.english_center_be.modules.auth.entity.PasswordResetOtp;
 import com.trinh.english_center_be.modules.auth.repository.PasswordResetOtpRepository;
-import com.trinh.english_center_be.modules.auth.service.MailService;
 import com.trinh.english_center_be.modules.auth.service.RefreshTokenService;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpChannel;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpPurpose;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpSender;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpSenderFactory;
 import com.trinh.english_center_be.modules.user.entity.User;
 import com.trinh.english_center_be.modules.user.service.UserService;
 import com.trinh.english_center_be.shared.enums.UserStatus;
@@ -33,7 +37,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 class PasswordResetServiceImplTest {
 
     @Mock UserService userService;
-    @Mock MailService mailService;
+    @Mock OtpSenderFactory otpSenders;
+    @Mock OtpSender otpSender;
     @Mock RefreshTokenService refreshTokenService;
     @Mock PasswordEncoder passwordEncoder;
     @Mock PasswordResetOtpRepository repository;
@@ -44,7 +49,8 @@ class PasswordResetServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new PasswordResetServiceImpl(userService, mailService, refreshTokenService, passwordEncoder, repository);
+        lenient().when(otpSenders.create(OtpChannel.EMAIL)).thenReturn(otpSender);
+        service = new PasswordResetServiceImpl(userService, otpSenders, refreshTokenService, passwordEncoder, repository);
         ReflectionTestUtils.setField(service, "ttlMinutes", 5L);
         ReflectionTestUtils.setField(service, "otpSecret", "unit-test-secret-unit-test-secret!!");
 
@@ -57,7 +63,7 @@ class PasswordResetServiceImplTest {
         when(userService.findByEmail("a@b.com")).thenReturn(Optional.of(user));
         service.requestReset("a@b.com");
         ArgumentCaptor<String> otp = ArgumentCaptor.forClass(String.class);
-        verify(mailService).sendPasswordResetOtp(eq("a@b.com"), eq("A B"), otp.capture());
+        verify(otpSender).send(eq(OtpPurpose.RESET_PASSWORD), eq(user), otp.capture());
 
         ArgumentCaptor<PasswordResetOtp> saved = ArgumentCaptor.forClass(PasswordResetOtp.class);
         verify(repository).save(saved.capture());
@@ -75,7 +81,7 @@ class PasswordResetServiceImplTest {
 
         service.requestReset("x@y.com");
 
-        verify(mailService, never()).sendPasswordResetOtp(anyString(), anyString(), anyString());
+        verify(otpSender, never()).send(any(), any(), anyString());
         verify(repository, never()).save(any(PasswordResetOtp.class));
     }
 
@@ -86,7 +92,7 @@ class PasswordResetServiceImplTest {
 
         service.requestReset("a@b.com");
 
-        verify(mailService, never()).sendPasswordResetOtp(anyString(), anyString(), anyString());
+        verify(otpSender, never()).send(any(), any(), anyString());
     }
 
     @Test
@@ -96,7 +102,7 @@ class PasswordResetServiceImplTest {
 
         service.requestReset("a@b.com");
 
-        verify(mailService, never()).sendPasswordResetOtp(anyString(), anyString(), anyString());
+        verify(otpSender, never()).send(any(), any(), anyString());
     }
 
     @Test

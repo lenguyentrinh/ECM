@@ -3,7 +3,9 @@ package com.trinh.english_center_be.modules.auth.service.impl;
 import com.trinh.english_center_be.modules.auth.entity.EmailVerificationOtp;
 import com.trinh.english_center_be.modules.auth.repository.EmailVerificationOtpRepository;
 import com.trinh.english_center_be.modules.auth.service.EmailVerificationService;
-import com.trinh.english_center_be.modules.auth.service.MailService;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpChannel;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpPurpose;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpSenderFactory;
 import com.trinh.english_center_be.modules.user.entity.User;
 import com.trinh.english_center_be.modules.user.service.UserService;
 import com.trinh.english_center_be.shared.enums.UserStatus;
@@ -38,7 +40,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final UserService userService;
-    private final MailService mailService;
+    private final OtpSenderFactory otpSenders;
     private final EmailVerificationOtpRepository repository;
 
     @Value("${auth.otp.ttl-minutes:5}")
@@ -71,7 +73,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         row.setLastSentAt(now);
         repository.save(row);
 
-        mailService.sendEmailVerificationOtp(user.getEmail(), user.getFullName(), otp);
+        otpSenders.create(OtpChannel.EMAIL).send(OtpPurpose.VERIFY_EMAIL, user, otp);
     }
 
     @Override

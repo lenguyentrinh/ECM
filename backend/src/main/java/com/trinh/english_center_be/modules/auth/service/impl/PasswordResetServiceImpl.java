@@ -3,9 +3,11 @@ package com.trinh.english_center_be.modules.auth.service.impl;
 import com.trinh.english_center_be.modules.auth.dto.ResetPasswordRequest;
 import com.trinh.english_center_be.modules.auth.entity.PasswordResetOtp;
 import com.trinh.english_center_be.modules.auth.repository.PasswordResetOtpRepository;
-import com.trinh.english_center_be.modules.auth.service.MailService;
 import com.trinh.english_center_be.modules.auth.service.PasswordResetService;
 import com.trinh.english_center_be.modules.auth.service.RefreshTokenService;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpChannel;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpPurpose;
+import com.trinh.english_center_be.modules.auth.service.otp.OtpSenderFactory;
 import com.trinh.english_center_be.modules.user.entity.User;
 import com.trinh.english_center_be.modules.user.service.UserService;
 import com.trinh.english_center_be.shared.enums.UserStatus;
@@ -48,7 +50,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final UserService userService;
-    private final MailService mailService;
+    private final OtpSenderFactory otpSenders;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetOtpRepository repository;
@@ -92,11 +94,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         row.setLastSentAt(now);
         repository.save(row);
 
-        if (invite) {
-            mailService.sendAccountInviteOtp(user.getEmail(), user.getFullName(), otp);
-        } else {
-            mailService.sendPasswordResetOtp(user.getEmail(), user.getFullName(), otp);
-        }
+        OtpPurpose purpose = invite ? OtpPurpose.ACCOUNT_INVITE : OtpPurpose.RESET_PASSWORD;
+        otpSenders.create(OtpChannel.EMAIL).send(purpose, user, otp);
     }
 
     @Override
