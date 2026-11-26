@@ -42,7 +42,7 @@ public class CourseController {
         // Public catalogue (same body for everyone), but enrolledCount changes on every enrollment: always revalidate.
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noCache())
-                .body(new ApiResponse<>(200, MessageConstant.LIST_SUCCESSFULLY, courseService.findAll()));
+                .body(new ApiResponse<>(200, String.format(MessageConstant.LIST_SUCCESSFULLY, Constant.COURSE), courseService.findAll()));
     }
 
     @GetMapping("/{id}")
