@@ -60,6 +60,7 @@ class EnrollmentServiceImplTest {
         student = Student.builder().id("s1").user(user).build();
 
         lenient().when(courseRepository.findById("c1")).thenReturn(Optional.of(course));
+        lenient().when(courseRepository.findByIdForUpdate("c1")).thenReturn(Optional.of(course));
         lenient().when(userService.findById("u1")).thenReturn(user);
         lenient().when(studentRepository.findByUser(user)).thenReturn(Optional.of(student));
         lenient().when(enrollmentRepository.findByCourseAndStudentAndStatus(course, student, Enrollment.ACTIVE)).thenReturn(Optional.empty());

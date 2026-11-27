@@ -94,8 +94,14 @@ public class AuthServiceImpl implements AuthService {
                 .map(a -> a.getAuthority().replaceFirst("^ROLE_", ""))
                 .sorted()
                 .toList();
-        return new MeResponse(user.getId(), user.getUsername(), user.getFullName(), user.getEmail(),
-                user.getPhone(), roles);
+        return MeResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .roles(roles)
+                .build();
     }
 
     @Override

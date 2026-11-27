@@ -196,19 +196,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     private CourseStudentResponse toStudentRow(Enrollment e, Course course, Student student, User user) {
-        return new CourseStudentResponse(
-                e.getId(),
-                user == null ? null : user.getId(),
-                user == null ? null : user.getFullName(),
-                user == null ? null : user.getUsername(),
-                user == null ? null : user.getEmail(),
-                user == null ? null : user.getPhone(),
-                user == null ? null : user.getStatus(),
-                e.getEnrollDate(),
-                e.getStatus(),
-                e.getAgeEligible(),
-                e.getEntryLevelEligible(),
-                e.getPrerequisitesEligible());
+        return CourseStudentResponse.builder()
+                .enrollmentId(e.getId())
+                .userId(user == null ? null : user.getId())
+                .fullName(user == null ? null : user.getFullName())
+                .username(user == null ? null : user.getUsername())
+                .email(user == null ? null : user.getEmail())
+                .phone(user == null ? null : user.getPhone())
+                .userStatus(user == null ? null : user.getStatus())
+                .enrollDate(e.getEnrollDate())
+                .enrollmentStatus(e.getStatus())
+                .ageEligible(e.getAgeEligible())
+                .entryLevelEligible(e.getEntryLevelEligible())
+                .prerequisitesEligible(e.getPrerequisitesEligible())
+                .build();
     }
 
     /** Null (unknown) unless both the course minimum age and the student's birth date are known. */

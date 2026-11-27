@@ -83,13 +83,30 @@ public class CourseScheduleServiceImpl implements CourseScheduleService {
             for (int i = 0; i < dated.size(); i++) {
                 Occurrence o = dated.get(i);
                 Course c = o.course();
-                items.add(new TeacherScheduleResponse.Occurrence(o.date(), o.start(), o.end(), c.getId(), c.getCode(),
-                        c.getName(), c.getRoom(), c.getCategoryId(), clashing.contains(i)));
+                items.add(TeacherScheduleResponse.Occurrence.builder()
+                        .date(o.date())
+                        .startTime(o.start())
+                        .endTime(o.end())
+                        .courseId(c.getId())
+                        .courseCode(c.getCode())
+                        .courseName(c.getName())
+                        .room(c.getRoom())
+                        .categoryId(c.getCategoryId())
+                        .conflict(clashing.contains(i))
+                        .build());
             }
             Set<String> codes = new LinkedHashSet<>();
             mine.forEach(c -> codes.add(c.getCode()));
-            out.add(new TeacherScheduleResponse(t.id(), t.userId(), t.fullName(), t.roles(), t.categoryIds(),
-                    List.copyOf(codes), pairs, items));
+            out.add(TeacherScheduleResponse.builder()
+                    .teacherId(t.id())
+                    .userId(t.userId())
+                    .teacherFullName(t.fullName())
+                    .roles(t.roles())
+                    .categoryIds(t.categoryIds())
+                    .courseCodes(List.copyOf(codes))
+                    .conflictCount(pairs)
+                    .occurrences(items)
+                    .build());
         }
         return out;
     }

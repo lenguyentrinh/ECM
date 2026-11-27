@@ -2,8 +2,10 @@ package com.trinh.english_center_be.modules.academic.dto;
 
 import com.trinh.english_center_be.shared.enums.UserStatus;
 import java.time.LocalDate;
+import lombok.Builder;
 
 /** One row of GET /courses/{id}/students. Eligibility flags are null when the data to decide is missing. */
+@Builder
 public record CourseStudentResponse(
         String enrollmentId,
         String userId,

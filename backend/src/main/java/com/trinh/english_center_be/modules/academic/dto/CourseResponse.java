@@ -5,7 +5,9 @@ import com.trinh.english_center_be.shared.enums.CourseStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import lombok.Builder;
 
+@Builder
 public record CourseResponse(
         String id,
         String code,

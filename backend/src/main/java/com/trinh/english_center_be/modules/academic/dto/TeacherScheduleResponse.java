@@ -3,8 +3,10 @@ package com.trinh.english_center_be.modules.academic.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import lombok.Builder;
 
 /** Weekly view of one teacher: every dated session in the range plus how many pairs overlap. */
+@Builder
 public record TeacherScheduleResponse(
         String teacherId,
         String userId,
@@ -15,6 +17,7 @@ public record TeacherScheduleResponse(
         int conflictCount,
         List<Occurrence> occurrences
 ) {
+    @Builder
     public record Occurrence(
             LocalDate date,
             LocalTime startTime,
